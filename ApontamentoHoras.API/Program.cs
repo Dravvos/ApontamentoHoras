@@ -63,7 +63,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddAntiforgery();
+
 var app = builder.Build();
+
+app.UseAntiforgery();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

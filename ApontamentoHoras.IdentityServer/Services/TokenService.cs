@@ -16,7 +16,7 @@ namespace ApontamentoHoras.IdentityServer.Services
             _conf = conf;
         }
 
-        public async Task<string> GenerateTokenAsync(ApplicationUser user)
+        public string GenerateTokenAsync(ApplicationUser user)
         {
             var claims = new List<Claim>
             {

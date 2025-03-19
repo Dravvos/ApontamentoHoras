@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace ApontamentoHoras.IdentityServer.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
@@ -40,6 +40,7 @@ namespace ApontamentoHoras.IdentityServer.Controllers
             {
                 return BadRequest("Email already in use");
             }
+
             var result = await _userManager.CreateAsync(new ApplicationUser { UserName = dto.Username, Nome = dto.Nome, Sobrenome = dto.Sobrenome, Email = dto.Email }, dto.Password);
             if (result.Succeeded)
             {
@@ -72,11 +73,45 @@ namespace ApontamentoHoras.IdentityServer.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByNameAsync(dto.Username);
-                var token = await _service.GenerateTokenAsync(user);
-                return Ok(token);
+                var token = _service.GenerateTokenAsync(user);
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.Now.AddHours(3)
+                };
+
+                Response.Cookies.Append("AuthToken", token, cookieOptions);
+                return Ok("Logged in succesfully");
             }
             else
                 return BadRequest("Invalid credentials");
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAccount(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return NotFound();
+            
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+                return NoContent();            
+            else
+                return BadRequest(result.Errors);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            Request.Cookies.TryGetValue("AuthToken", out var token);
+            
+            //var user = await _userManager.GetUserAsync(User);
+            //return Ok(new { user.Nome, user.Sobrenome, user.Email, userRoles});
+            return Ok();
         }
     }
 }

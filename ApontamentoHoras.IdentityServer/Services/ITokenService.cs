@@ -5,6 +5,6 @@ namespace ApontamentoHoras.IdentityServer.Services
 {
     public interface ITokenService
     {
-        Task<string> GenerateTokenAsync(ApplicationUser user);
+        string GenerateTokenAsync(ApplicationUser user);
     }
 }
